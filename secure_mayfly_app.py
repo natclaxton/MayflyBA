@@ -10,7 +10,7 @@ import hashlib
 def get_hashed_password(password):
     return hashlib.sha256(password.encode()).hexdigest()
 
-correct_password_hash = get_hashed_password("Speedbird!!")  # Set your real password here
+correct_password_hash = get_hashed_password("MayFly2025!")  # Set your real password here
 
 def check_password():
     def password_entered():
