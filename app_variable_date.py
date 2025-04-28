@@ -91,8 +91,8 @@ def parse_txt(file_content):
 
     return df
 
-st.set_page_config(page_title="British Airways MayFly Generator", page_icon="✈️")
-st.title("✈️ British Airways MayFly PDF Generator")
+st.set_page_config(page_title="British Airways MayFly Generator", page_icon="")
+st.title("British Airways MayFly PDF Generator")
 
 selected_date = st.date_input("Select MayFly Date", datetime.today())
 date_str = selected_date.strftime("%d %B")
@@ -116,7 +116,7 @@ if uploaded_file:
 
         with open(pdf_output_path, "rb") as file:
             st.download_button(
-                label="📁 Download MayFly PDF",
+                label="Download MayFly PDF",
                 data=file,
                 file_name=f"BA_MayFly_{date_str.replace(' ', '_')}.pdf",
                 mime="application/pdf"
