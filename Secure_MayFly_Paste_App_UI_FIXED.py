@@ -7,7 +7,7 @@ import hashlib
 import pytz
 
 # === Secure Password Protection ===
-def get_hashed_password(password):
+def get_hashed_continue  # Skip invalid flight dataword(password):
     return hashlib.sha256(password.encode()).hexdigest()
 
 correct_password_hash = get_hashed_password("MayFly2025!")  # Set your real password here
@@ -97,21 +97,8 @@ def parse_txt(file_content, filter_type, group_type):
     while i < len(lines):
         if lines[i].startswith("BA"):
             try:
-                flight_no = lines[i].strip()
-                aircraft_type = lines[i+2].strip()
-                route = lines[i+3].strip()
-                dest = route[3:]
-
-                std_match = re.search(r"STD: \d{2} Apr - (\d{2}:\d{2})z", lines[i+4])
-                load_match = re.search(r"(\d{1,3})%Status", lines[i+8])
-
-                if std_match and load_match:
-                    etd_utc_str = std_match.group(1)
-                    load = int(load_match.group(1))
-
-                    today = datetime.today().date()
-                    etd_combined = datetime.combine(selected_date, datetime.strptime(etd_utc_str, "%H:%M").time())
-etd_utc = utc_tz.localize(etd_combined)
+                etd_combined = datetime.combine(selected_date, datetime.strptime(etd_utc_str, "%H:%M").time())
+                etd_utc = utc_tz.localize(etd_combined)
                     etd_utc = utc_tz.localize(etd_utc)
                     etd_local = etd_utc.astimezone(uk_tz)
 
@@ -135,7 +122,7 @@ etd_utc = utc_tz.localize(etd_combined)
                         "Load Factor Numeric": load,
                         "Category": category
                     })
-            except Exception:
+            except Exception as e:
                 pass
         i += 1
 
