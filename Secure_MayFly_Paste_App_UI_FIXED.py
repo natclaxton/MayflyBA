@@ -79,11 +79,19 @@ class BA_PDF(FPDF):
                 self.cell(widths[i], 6, row[key], 1, 0, 'C', True)
             self.ln()
 
-def parse_txt(file_content, filter_type):
+def parse_txt(file_content, filter_type, group_type):
     lines = file_content.strip().split('\n')
     flights = []
     uk_tz = pytz.timezone("Europe/London")
     utc_tz = pytz.utc
+
+    domestic = {"ABZ", "BHD", "EDI", "GLA", "INV", "JER", "MAN", "NCL"}
+    short_haul = {
+        "AMS", "ATH", "BCN", "BER", "BLL", "BLQ", "BUD", "CDG", "CPH", "DUB", "DUS", "EDI", "FAO",
+        "FCO", "FRA", "GIB", "GLA", "GOT", "GVA", "HAJ", "HAM", "IST", "JER", "KEF", "LCA", "LIN",
+        "LIS", "LYS", "MAD", "MAN", "MRS", "MUC", "MXP", "NAP", "NCE", "OSL", "OTP", "PMI", "PRG",
+        "PSA", "RAK", "RIX", "SOF", "STR", "TIA", "TLS", "VCE", "VIE", "WAW", "ZAG", "ZRH"
+    }
 
     i = 0
     while i < len(lines):
@@ -92,6 +100,7 @@ def parse_txt(file_content, filter_type):
                 flight_no = lines[i].strip()
                 aircraft_type = lines[i+2].strip()
                 route = lines[i+3].strip()
+                dest = route[3:]
 
                 std_match = re.search(r"STD: \d{2} Apr - (\d{2}:\d{2})z", lines[i+4])
                 load_match = re.search(r"(\d{1,3})%Status", lines[i+8])
@@ -100,11 +109,20 @@ def parse_txt(file_content, filter_type):
                     etd_utc_str = std_match.group(1)
                     load = int(load_match.group(1))
 
-                    etd_utc = datetime.strptime(etd_utc_str, "%H:%M")
+                    today = datetime.today().date()
+                    etd_combined = datetime.combine(selected_date, datetime.strptime(etd_utc_str, "%H:%M").time())
+etd_utc = utc_tz.localize(etd_combined)
                     etd_utc = utc_tz.localize(etd_utc)
                     etd_local = etd_utc.astimezone(uk_tz)
 
                     conformance_time = (etd_local - timedelta(minutes=35)).strftime("%H:%M")
+
+                    if dest in domestic:
+                        category = "DOMESTIC"
+                    elif dest in short_haul:
+                        category = "SHORT HAUL"
+                    else:
+                        category = "LONG HAUL"
 
                     flights.append({
                         "Flight Number": flight_no,
@@ -114,7 +132,8 @@ def parse_txt(file_content, filter_type):
                         "ETD Local": etd_local.strftime("%H:%M"),
                         "Conformance Time": conformance_time,
                         "Load Factor": f"{load}%",
-                        "Load Factor Numeric": load
+                        "Load Factor Numeric": load,
+                        "Category": category
                     })
             except Exception:
                 pass
@@ -125,6 +144,8 @@ def parse_txt(file_content, filter_type):
     if not df.empty:
         if filter_type == "Flights above 90%":
             df = df[df["Load Factor Numeric"] >= 90]
+        if group_type != "All":
+            df = df[df["Category"] == group_type]
         df = df.sort_values(by="ETD Local")
 
     return df
@@ -135,16 +156,28 @@ st.title("British Airways MayFly PDF Generator")
 selected_date = st.date_input("Select MayFly Date", datetime.today())
 date_str = selected_date.strftime("%d %B")
 
-filter_option = st.radio("Choose Filter", ["All Flights", "Flights above 90%"])
+# === Filters Section ===
+col1, col2 = st.columns(2)
+with col1:
+    # === Filters Section ===
+col1, col2 = st.columns(2)
+with col1:
+    filter_option = st.radio("Choose Load Filter", ["All Flights", "Flights above 90%"])
+with col2:
+    group_option = st.radio("Choose Route Group", ["All", "DOMESTIC", "SHORT HAUL", "LONG HAUL"])
+with col2:
+    group_option = st.radio("Choose Route Group", ["All", "DOMESTIC", "SHORT HAUL", "LONG HAUL"])
+group_option = st.radio("Choose Route Group", ["All", "DOMESTIC", "SHORT HAUL", "LONG HAUL"])
+group_option = st.radio("Choose Route Group", ["All", "DOMESTIC", "SHORT HAUL", "LONG HAUL"])
 
 st.markdown("### Paste your MayFly data below")
 text_input = st.text_area("Paste .txt contents here")
 
 if text_input:
-    flights_df = parse_txt(text_input, filter_option)
+    flights_df = parse_txt(text_input, filter_option, group_option)
 
     if not flights_df.empty:
-        st.success(f"Processed {len(flights_df)} flights ({filter_option}).")
+        st.success(f"Processed {len(flights_df)} flights ({filter_option} | {group_option}).")
 
         pdf = BA_PDF(date_str, orientation='P', unit='mm', format='A4')
         pdf.set_auto_page_break(auto=True, margin=10)
