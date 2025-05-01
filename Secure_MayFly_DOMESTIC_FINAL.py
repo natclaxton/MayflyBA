@@ -129,7 +129,7 @@ def parse_txt(file_content, filter_type):
     df = pd.DataFrame(flights)
 
     if not df.empty:
-        if filter_type == "Flights above 90%":
+        if filter_type == "Flights above 90% Load Factor":
             df = df[df["Load Factor Numeric"] >= 90]
         elif filter_type == "Domestic":
             df = df[df["Route"].isin(DOMESTIC_ROUTES)]
