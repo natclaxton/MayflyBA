@@ -143,7 +143,7 @@ st.title("British Airways MayFly PDF Generator")
 selected_date = st.date_input("Select MayFly Date", datetime.today())
 date_str = selected_date.strftime("%d %B")
 
-filter_option = st.radio("Choose Filter", ["All Flights", "Flights above 90% Load Factor", "Domestic Only"])
+filter_option = st.radio("Choose Filter", ["All Flights", "Flights above 90%", "Domestic"])
 
 st.markdown("### Paste your MayFly data below")
 text_input = st.text_area("Paste .txt contents here")
