@@ -109,14 +109,13 @@ def parse_txt(file_content, filter_type):
 
                     etd_utc = datetime.strptime(etd_utc_str, "%H:%M")
                     etd_utc = utc_tz.localize(etd_utc)
-                    etd_z_plus1 = (etd_utc + timedelta(hours=1)).strftime("%H:%M")
-                    conformance_time = (etd_utc - timedelta(minutes=35)).strftime("%H:%M")
+                    conformance_time = (etd_utc + timedelta(hours=1)).strftime("%H:%M")
 
                     flights.append({
                         "Flight Number": flight_no,
                         "Aircraft Type": aircraft_type,
                         "Route": route,
-                        "ETD": etd_z_plus1,
+                        "ETD": etd_utc.strftime("%H:%M") + "z",
                         "ETD Local": etd_utc.strftime("%H:%M"),
                         "Conformance Time": conformance_time,
                         "Load Factor": f"{load}%",
