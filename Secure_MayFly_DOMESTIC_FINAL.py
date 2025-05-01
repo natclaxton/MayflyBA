@@ -54,6 +54,17 @@ class BA_PDF(FPDF):
         self.cell(0, 10, f'MayFly {self.date_str} - British Airways', ln=True, align='C', fill=True)
         self.ln(5)
 
+        # Add conformance note
+        self.set_font('Arial', 'I', 8)
+        self.set_text_color(0)
+        self.multi_cell(0, 5,
+            "Please note, Conformance times below are for landside only. "
+            "If you're working in connections, add 5 minutes to the conformance time. "
+            "E.g. landside conformance is 10:00, connections conformance is 10:05.",
+            align='C'
+        )
+        self.ln(3)
+
     def footer(self):
         self.set_y(-12)
         self.set_font('Arial', 'I', 8)
@@ -110,10 +121,7 @@ def parse_txt(file_content, filter_type):
                     etd_utc = datetime.strptime(etd_utc_str, "%H:%M")
                     etd_utc = utc_tz.localize(etd_utc)
 
-                    # Zulu + 1 hour for ETD
                     etd_z_plus1 = (etd_utc + timedelta(hours=1)).strftime("%H:%M")
-
-                    # Conformance = Zulu + 1 hour - 35 mins = Zulu + 25 mins
                     conformance_time = (etd_utc + timedelta(minutes=25)).strftime("%H:%M")
 
                     flights.append({
