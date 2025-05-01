@@ -129,7 +129,7 @@ def parse_txt(file_content, filter_type):
     df = pd.DataFrame(flights)
 
     if not df.empty:
-        if filter_type == "Flights above 90% Load Factor":
+        if filter_type == "Flights above 90%":
             df = df[df["Load Factor Numeric"] >= 90]
         elif filter_type == "Domestic":
             df = df[df["Route"].isin(DOMESTIC_ROUTES)]
@@ -143,7 +143,7 @@ st.title("British Airways MayFly PDF Generator")
 selected_date = st.date_input("Select MayFly Date", datetime.today())
 date_str = selected_date.strftime("%d %B")
 
-filter_option = st.radio("Choose Filter", ["All Flights", "Flights above 90%", "Domestic"])
+filter_option = st.radio("Choose Filter", ["All Flights", "Flights above 90% Load Factor", "Domestic Only"])
 
 st.markdown("### Paste your MayFly data below")
 text_input = st.text_area("Paste .txt contents here")
@@ -170,6 +170,6 @@ if text_input:
                 mime="application/pdf"
             )
 
-        st.info("Footer: Confidential © 2025 | British Airways")
+        st.info("Confidential © 2025 | British Airways")
     else:
         st.error("No valid flights found with current filter. Please check your pasted data.")
