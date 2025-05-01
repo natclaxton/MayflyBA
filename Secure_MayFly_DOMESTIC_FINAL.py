@@ -26,7 +26,7 @@ def check_password():
         return False
     elif not st.session_state["password_correct"]:
         st.text_input("Enter password:", type="password", on_change=password_entered, key="password")
-        st.error("\ud83d\ude15 Password incorrect. Try again.")
+        st.error("😕 Password incorrect. Try again.")
         return False
     else:
         return True
@@ -39,8 +39,8 @@ DOMESTIC_ROUTES = ["LHRABZ", "LHRINV", "LHRGLA", "LHREDI", "LHRBHD", "LHRNCL", "
 
 # === Main App ===
 BA_BLUE = (0, 32, 91)
-LIGHT_RED = (255, 0, 0)
-AMBER = (255, 191, 0)
+LIGHT_RED = (255, 204, 204)
+AMBER = (255, 229, 153)
 
 class BA_PDF(FPDF):
     def __init__(self, date_str, *args, **kwargs):
@@ -62,7 +62,6 @@ class BA_PDF(FPDF):
 
     def flight_table(self, data):
         headers = ['Flight No', 'Aircraft', 'Route', 'ETD (Zulu)', 'Conformance', 'Load']
-        keys = ["Flight Number", "Aircraft Type", "Route", "ETD", "Conformance Time", "Load Factor"]
         widths = [30, 25, 30, 30, 30, 20]
 
         self.set_font('Arial', 'B', 8.5)
@@ -75,16 +74,17 @@ class BA_PDF(FPDF):
         self.set_font('Arial', '', 7.5)
         self.set_text_color(0)
         for _, row in data.iterrows():
-            load = int(row["Load Factor"].rstrip('%'))
-            if load > 91:
-                self.set_fill_color(*LIGHT_RED)
-            elif 70 <= load <= 90:
-                self.set_fill_color(*AMBER)
-            else:
-                self.set_fill_color(255, 255, 255)
-
-            for i in range(len(keys)):
-                self.cell(widths[i], 6, row[keys[i]], 1, 0, 'C', True)
+            for i, key in enumerate(["Flight Number", "Aircraft Type", "Route", "ETD", "Conformance Time", "Load Factor"]):
+                fill = False
+                if key == "Load Factor":
+                    load = int(row["Load Factor"].rstrip('%'))
+                    if load > 91:
+                        self.set_fill_color(*LIGHT_RED)
+                        fill = True
+                    elif 70 <= load <= 90:
+                        self.set_fill_color(*AMBER)
+                        fill = True
+                self.cell(widths[i], 6, row[key], 1, 0, 'C', fill)
             self.ln()
 
 def parse_txt(file_content, filter_type):
