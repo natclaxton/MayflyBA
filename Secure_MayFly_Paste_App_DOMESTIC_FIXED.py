@@ -1,18 +1,26 @@
-import streamlit as st
-from datetime import datetime, timedelta
-from io import BytesIO
 from fpdf import FPDF
+import streamlit as st
+from datetime import datetime
 import pytz
-import re
 
-# List of UK & Ireland airports for the Domestic filter
-DOMESTIC_AIRPORTS = {'ABZ', 'BHD', 'BFS', 'BHX', 'BRS', 'DUB', 'EDI', 'EXT', 'GLA', 'INV', 'JER', 'LBA', 'LGW', 'LHR', 'LPL', 'LTN', 'MAN', 'NCL', 'NQY', 'SOU'}
+# Define BA's Domestic Route Codes (UK & Ireland)
+domestic_airports = {'ABZ', 'BHD', 'EDI', 'GLA', 'INV', 'JER', 'MAN', 'NCL'}
 
-# PDF generation function
+# Set up Streamlit UI
+st.title("British Airways MayFly PDF Generator")
+
+date = st.date_input("Select MayFly Date", datetime.now())
+filter_option = st.radio("Choose Filter", ("All Flights", "Flights above 90%", "Domestic Flights"))
+mayfly_data = st.text_area("Paste your MayFly data below", height=300)
+
+# PDF setup
 class PDF(FPDF):
     def header(self):
-        self.set_font('Arial', 'B', 12)
-        self.cell(0, 10, 'British Airways MayFly', ln=True, align='C')
+        self.set_font('Arial', 'B', 16)
+        self.cell(0, 10, 'British Airways MayFly Report', ln=True, align='C')
+        self.set_font('Arial', '', 12)
+        self.cell(0, 10, f'Date: {date.strftime("%Y-%m-%d")}', ln=True, align='C')
+        self.ln(10)
 
     def footer(self):
         self.set_y(-15)
@@ -22,64 +30,64 @@ class PDF(FPDF):
     def flight_table(self, flights):
         self.set_font('Arial', '', 10)
         for flight in flights:
-            if flight['load_factor'] >= 100:
+            load = flight.get('load_factor', 0)
+            route = flight.get('route', 'N/A')
+            etd = flight.get('etd', 'N/A')
+            status = flight.get('status', 'Unknown')
+            
+            if load >= 100:
                 self.set_text_color(255, 0, 0)
             else:
                 self.set_text_color(0, 0, 0)
-            self.cell(0, 10, f"{flight['etd']} | {flight['route']} | {flight['load_factor']}% | {flight['status']}", ln=True)
+            
+            self.cell(0, 10, f"{etd} | {route} | {load}% | {status}", ln=True)
 
-# Streamlit app
-st.title("British Airways MayFly PDF Generator")
-
-mayfly_date = st.date_input("Select MayFly Date", datetime.today())
-
-filter_option = st.radio("Choose Filter", ["All Flights", "Flights above 90%", "Domestic Only"])
-
-mayfly_text = st.text_area("Paste .txt contents here")
-
-def parse_flights(text):
-    lines = text.strip().split("\n")
+def parse_data(text):
+    lines = text.splitlines()
     flights = []
     flight = {}
     for line in lines:
+        line = line.strip()
         if line.startswith("BA"):
-            if flight:
+            flight['route'] = line
+        elif '%' in line:
+            try:
+                flight['load_factor'] = int(line.split('%')[0])
+            except:
+                flight['load_factor'] = 0
+            flight['status'] = line.split('%')[-1].split(":")[-1].strip()
+        elif ':' in line and 'May' in line:
+            flight['etd'] = line.split('-')[-1].strip()
+        elif line.startswith("G-") or line.startswith("GZ") or len(line) == 6:
+            flight['reg'] = line
+        elif line == "":
+            if 'route' in flight:
                 flights.append(flight)
-                flight = {}
-            flight["route"] = line.strip()
-        elif "%" in line:
-            match = re.search(r'(\d+)%', line)
-            if match:
-                flight["load_factor"] = int(match.group(1))
-        elif ":" in line and "ETD" not in flight:
-            match = re.search(r'(\d{2}:\d{2})', line)
-            if match:
-                flight["etd"] = match.group(1)
-        elif "Status:" in line:
-            status = line.split("Status:")[-1].strip()
-            flight["status"] = status
-    if flight:
+            flight = {}
+    if flight and 'route' in flight:
         flights.append(flight)
     return flights
 
 def filter_flights(flights, option):
     if option == "Flights above 90%":
-        return [f for f in flights if f["load_factor"] >= 90]
-    elif option == "Domestic Only":
-        return [f for f in flights if f["route"][3:6] in DOMESTIC_AIRPORTS]
-    else:
-        return flights
+        return [f for f in flights if f.get('load_factor', 0) > 90]
+    elif option == "Domestic Flights":
+        return [f for f in flights if f.get('route', '')[3:6] in domestic_airports]
+    return flights
 
-if mayfly_text:
-    flights = parse_flights(mayfly_text)
+if mayfly_data:
+    flights = parse_data(mayfly_data)
     filtered = filter_flights(flights, filter_option)
 
-    if not filtered:
-        st.error("No valid flights found with current filter. Please check your pasted data.")
-    else:
+    if filtered:
         pdf = PDF()
         pdf.add_page()
         pdf.flight_table(filtered)
-        output = BytesIO()
-        pdf.output(output)
-        st.download_button("Download MayFly PDF", data=output.getvalue(), file_name="MayFly.pdf")
+
+        pdf_output = f"MayFly_{date.strftime('%Y%m%d')}.pdf"
+        pdf.output(pdf_output)
+
+        with open(pdf_output, "rb") as file:
+            st.download_button("Download PDF", data=file, file_name=pdf_output, mime='application/pdf')
+    else:
+        st.error("No valid flights found with current filter. Please check your pasted data.")
