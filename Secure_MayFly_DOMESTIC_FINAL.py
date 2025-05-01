@@ -78,7 +78,7 @@ class BA_PDF(FPDF):
                 fill = False
                 if key == "Load Factor":
                     load = int(row["Load Factor"].rstrip('%'))
-                    if load > 91:
+                    if load >= 91:
                         self.set_fill_color(*LIGHT_RED)
                         fill = True
                     elif 70 <= load <= 90:
@@ -109,14 +109,14 @@ def parse_txt(file_content, filter_type):
 
                     etd_utc = datetime.strptime(etd_utc_str, "%H:%M")
                     etd_utc = utc_tz.localize(etd_utc)
-
+                    etd_z_plus1 = (etd_utc + timedelta(hours=1)).strftime("%H:%M") + "z"
                     conformance_time = (etd_utc - timedelta(minutes=35)).strftime("%H:%M")
 
                     flights.append({
                         "Flight Number": flight_no,
                         "Aircraft Type": aircraft_type,
                         "Route": route,
-                        "ETD": etd_utc.strftime("%H:%M") + "z",
+                        "ETD": etd_z_plus1,
                         "ETD Local": etd_utc.strftime("%H:%M"),
                         "Conformance Time": conformance_time,
                         "Load Factor": f"{load}%",
