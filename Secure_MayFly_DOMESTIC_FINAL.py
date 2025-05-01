@@ -158,7 +158,7 @@ date_str = selected_date.strftime("%d %B")
 filter_option = st.radio("Choose Filter", ["All Flights", "Flights above 90%", "Domestic"])
 
 st.markdown("### Paste your MayFly data below")
-text_input = st.text_area("Paste .txt contents here")
+text_input = st.text_area("Paste content from Ops Dashboard here")
 
 if text_input:
     flights_df = parse_txt(text_input, filter_option)
