@@ -35,7 +35,7 @@ if not check_password():
     st.stop()
 
 # === Domestic route filter ===
-DOMESTIC_ROUTES = ["LHRABZ", "LHRINV", "LHRGLA", "LHREDI", "LHRBHD", "LHRNCL", "LHRJER", "LHRMAN", "LHRBFS"]
+DOMESTIC_ROUTES = ["LHRABZ", "LHRINV", "LHRGLA", "LHREDI", "LHRBHD", "LHRNCL", "LHRJER", "LHRMAN", "LHRBFS", "LHRDUB"]
 
 # === Main App ===
 BA_BLUE = (0, 32, 91)
