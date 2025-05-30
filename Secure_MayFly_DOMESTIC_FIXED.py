@@ -18,7 +18,7 @@ if "authenticated" not in st.session_state:
 
 def login_page():
     st.markdown(
-        "<h1 style='text-align:center; color:#3e577d;'>WELCOME TO THE MAYFLY GENERATOR - BETA</h1>",
+        "<h1 style='text-align:center; color:#3e577d;'>WELCOME TO THE MAYFLY GENERATOR</h1>",
         unsafe_allow_html=True
     )
     pwd = st.text_input("ENTER PASSWORD", type="password", key="login_pwd")
