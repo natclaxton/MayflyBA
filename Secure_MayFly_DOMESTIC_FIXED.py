@@ -55,13 +55,17 @@ st.markdown("---")
 DOMESTIC_ROUTES = ["LHRABZ","LHRINV","LHRGLA","LHREDI","LHRBHD",
                    "LHRNCL","LHRJER","LHRMAN","LHRBFS","LHRDUB"]
 T3_FLIGHTS = [
-    "BA159","BA227","BA247","BA253","BA289","BA336","BA340","BA350","BA366",
-    "BA368","BA370","BA372","BA374","BA376","BA378","BA380","BA382","BA386",
-    "BA408","BA416","BA418","BA422","BA490","BA492","BA498","BA532","BA608",
-    "BA616","BA618","BA690","BA696","BA700","BA702","BA704","BA706","BA760",
-    "BA762","BA764","BA766","BA770","BA790","BA792","BA802","BA806","BA848",
-    "BA852","BA854","BA856","BA858","BA860","BA862","BA864","BA866","BA868",
-    "BA870","BA872","BA874","BA882","BA884","BA886","BA892","BA896","BA918","BA920"
+    "BA067", "BA085", "BA125", "BA159", "BA191", "BA193", "BA227", "BA247", "BA253", "BA289",
+    "BA336", "BA340", "BA350", "BA354", "BA356", "BA358", "BA360", "BA362", "BA364", "BA366",
+    "BA368", "BA370", "BA372", "BA374", "BA376", "BA378", "BA380", "BA382", "BA386", "BA408",
+    "BA410", "BA416", "BA418", "BA420", "BA422", "BA426", "BA470", "BA490", "BA492", "BA494",
+    "BA496", "BA498", "BA514", "BA532", "BA534", "BA608", "BA616", "BA618", "BA682", "BA690",
+    "BA692", "BA694", "BA696", "BA698", "BA700", "BA702", "BA704", "BA706", "BA760", "BA762",
+    "BA764", "BA766", "BA768", "BA770", "BA772", "BA774", "BA790", "BA792", "BA802", "BA806",
+    "BA848", "BA852", "BA854", "BA856", "BA858", "BA860", "BA862", "BA864", "BA866", "BA868",
+    "BA870", "BA872", "BA874", "BA876", "BA880", "BA882", "BA884", "BA886", "BA888", "BA890",
+    "BA892", "BA896", "BA912", "BA916", "BA918", "BA920", "BA922", "BA924", "BA928", "BA996",
+    "BA998"
 ]
 LGW_FLIGHTS = [
     "BA2640","BA2704","BA2670","BA2740","BA2624","BA2748","BA2676","BA2758","BA2784",
@@ -160,13 +164,13 @@ def parse_txt(content):
                 m2 = re.search(r"(\d{1,3})%Status", lines[i+8])
                 if m1 and m2:
                     t, lf = m1.group(1), int(m2.group(1))
-                    dt = utc.localize(datetime.strptime(t, "%H:%M"))
+                    dt = utc.localize(datetime.strptime(t, "%H:%M"))  # UTC time
                     flights.append({
                         "Flight Number": fn,
                         "Aircraft Type": ac,
                         "Route": rt,
-                        "ETD": (dt + timedelta(hours=1)).strftime("%H:%M"),
-                        "ETD Local": dt.strftime("%H:%M"),
+                        "ETD": dt.strftime("%H:%M"),                 # UTC
+                        "ETD Local": dt.strftime("%H:%M"),            # kept for filter; also UTC
                         "Conformance Time": (dt + timedelta(minutes=25)).strftime("%H:%M"),
                         "Load Factor": f"{lf}%",
                         "Load Factor Numeric": lf
@@ -201,7 +205,7 @@ min_h, max_h = st.slider("", 0, 23, (0, 23), help="Show flights departing betwee
 st.markdown("<h4 style='color:#3e577d;'>LIVE MAYFLY PREVIEW - Paste Below</h4>", unsafe_allow_html=True)
 text_input = st.text_area("", height=200)
 
-# === Countdown to next refresh at 00:00 UTC & 12:00 UTC ===
+# === Countdown to next refresh at 00:00 UTC & 12:00 UTC (UTC-only display) ===
 now = datetime.now(pytz.utc)
 today = now.date()
 times = [
@@ -213,8 +217,7 @@ next_time = min(t for t in times if t > now)
 secs = int((next_time - now).total_seconds())
 h, r = divmod(secs, 3600)
 m, s = divmod(r, 60)
-bst_time = next_time + timedelta(hours=1)
-st.markdown(f"**Next refresh: {next_time.strftime('%H:%M')} UTC / {bst_time.strftime('%H:%M')} BST in {h:02d}:{m:02d}:{s:02d}**")
+st.markdown(f"**Next refresh: {next_time.strftime('%H:%M')} UTC in {h:02d}:{m:02d}:{s:02d}**")
 st.markdown("[OpsDashboard](https://opsdashboard.baplc.com/#/search)")
 
 if text_input:
@@ -239,7 +242,7 @@ if text_input:
         if "Short Haul" in filter_options:
             df = df[df["Aircraft Type"].isin(SHORT_HAUL_TYPES)]
 
-    # Time window
+    # Time window (UTC hours)
     df = df[df["ETD Local"].apply(lambda t: min_h <= int(t.split(":")[0]) <= max_h)]
 
     if not df.empty:
