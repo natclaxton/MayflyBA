@@ -55,28 +55,17 @@ st.markdown("---")
 DOMESTIC_ROUTES = ["LHRABZ","LHRINV","LHRGLA","LHREDI","LHRBHD",
                    "LHRNCL","LHRJER","LHRMAN","LHRBFS","LHRDUB"]
 
-# Removed flights now operating from T5:
-# BA806, BA380, BA422, BA340, BA289, BA762, BA848, BA764
 T3_FLIGHTS = [
     "BA067", "BA085", "BA125", "BA159", "BA191", "BA193", "BA227", "BA247", "BA253",
-    # "BA289",  # moved to T5
     "BA336",
-    # "BA340",  # moved to T5
     "BA354", "BA356", "BA358", "BA360", "BA362", "BA364", "BA366",
     "BA368", "BA370", "BA372", "BA374", "BA376", "BA378",
-    # "BA380",  # moved to T5
-    "BA382", "BA386", "BA408", "BA410", "BA416", "BA418",
-    # "BA422",  # moved to T5
+    "BA382", "BA408", "BA410", "BA416", "BA418",
     "BA420", "BA426", "BA470", "BA494", "BA496", "BA498", "BA514", "BA532", 
     "BA534", "BA608", "BA616", "BA618", "BA682", "BA690", "BA692", "BA694", 
     "BA696", "BA698", "BA700", "BA702", "BA704", "BA706", "BA760",
-    # "BA762",  # moved to T5
-    # "BA764",  # moved to T5
     "BA766", "BA768", "BA770", "BA772", "BA774", "BA790", "BA792",
-    # "BA802" stays T3 (not listed to move)
     "BA802",
-    # "BA806",  # moved to T5
-    # "BA848",  # moved to T5
     "BA852", "BA854", "BA856", "BA858", "BA860", "BA862", "BA864", "BA866",
     "BA868", "BA870", "BA872", "BA874", "BA876", "BA880", "BA882", "BA884",
     "BA886", "BA888", "BA890", "BA892", "BA896", "BA912", "BA916", "BA918",
