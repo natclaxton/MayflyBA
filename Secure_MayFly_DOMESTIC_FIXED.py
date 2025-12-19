@@ -104,7 +104,7 @@ class BA_PDF(FPDF):
         self.set_text_color(0)
         self.multi_cell(
             0,5,
-            "Please note, Conformance times below are for landside only. For connections, add 5 minutes.",
+            "Please note, Conformance times below are for landside only. For connections, add 4 minutes.",
             align='C'
         )
         self.ln(3)
