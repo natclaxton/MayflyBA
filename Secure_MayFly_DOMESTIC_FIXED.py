@@ -269,7 +269,11 @@ if text_input:
     df = df[df["ETD Local"].apply(lambda t: min_h <= int(t.split(":")[0]) <= max_h)]
 
     if not df.empty:
-        st.dataframe(df.drop(columns="Load Factor Numeric"), use_container_width=True)
+        preview_df = df.drop(columns="Load Factor Numeric").copy()
+# Force plain Python strings for Streamlit display (avoids Arrow LargeUtf8)
+for c in preview_df.columns:
+    preview_df[c] = preview_df[c].astype(str)
+st.dataframe(preview_df, use_container_width=True)
         st.success(f"Processed {len(df)} flights ({station}, filters: {filter_options}).")
         with st.spinner("Generating PDF…"):
             pdf = BA_PDF(date_str, 'P', 'mm', 'A4')
