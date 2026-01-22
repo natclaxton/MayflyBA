@@ -209,7 +209,7 @@ def build_short_filename(selected_date, filter_options) -> str:
 
 # === UI Inputs ===
 st.markdown("<h4 style='color:#3e577d;'>SELECT MAYFLY DATE</h4>", unsafe_allow_html=True)
-selected_date = st.date_input("", datetime.today(), format="DD/MM/YYYY")
+selected_date = st.date_input("", datetime.today().date())
 date_str      = selected_date.strftime("%d %B")
 
 st.markdown("<h4 style='color:#3e577d;'>SELECT STATION</h4>", unsafe_allow_html=True)
